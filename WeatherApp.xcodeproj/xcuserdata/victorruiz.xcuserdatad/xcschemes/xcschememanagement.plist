@@ -23,12 +23,35 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>0</integer>
 		</dict>
 		<key>WeatherApp.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>1</integer>
+		</dict>
+		<key>WeatherAppTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>98FC0DD52A1FEE1900909C92</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>98FC0DE62A1FEE1D00909C92</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>98FC0DF02A1FEE1D00909C92</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

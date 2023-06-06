@@ -140,12 +140,16 @@ final class WeatherListViewController: StatefulViewController {
     private func bindViewModel() {
         viewModel.outputs.viewState = { [weak self] newState in
             guard let self = self else { return }
-            self.viewState = newState
+            DispatchQueue.main.async {
+                self.viewState = newState
+            }
         }
 
         viewModel.outputs.cellTypes = { [weak self] types in
             guard let self = self else { return }
-            self.updateDataSource(rowTypes: types)
+            DispatchQueue.main.async {
+                self.updateDataSource(rowTypes: types)
+            }
         }
     }
 

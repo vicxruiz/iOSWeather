@@ -21,6 +21,7 @@ protocol WeatherListModelType: AnyObject {
 protocol WeatherListModelOutputs: AnyObject {
     var viewState: (ViewState) -> Void { get set }
     var cellTypes: ([WeatherListSectionCellConfig]) -> Void { get set }
+    var didTapCell: (Bool) -> Void { get set }
 }
 
 protocol WeatherListModelInputs {
@@ -40,7 +41,7 @@ final class WeatherListViewModel: WeatherListVM {
     
     // MARK: - Properties
     
-    private let locationService: LocationService
+    private let locationRepository: LocationRepository
     private let weatherRepository: WeatherRepository
     private var completedCurrentLocationRequest: Bool = false
     private var hasFetchedCurrentLocationWeather = false
@@ -55,11 +56,10 @@ final class WeatherListViewModel: WeatherListVM {
      */
     init(
         weatherRepository: WeatherRepository,
-        locationService: LocationService
+        locationRepository: LocationRepository
     ) {
-        print("///Init")
         self.weatherRepository = weatherRepository
-        self.locationService = locationService
+        self.locationRepository = locationRepository
     }
     
     // MARK: - WSJLandingPageViewModelType
@@ -71,6 +71,7 @@ final class WeatherListViewModel: WeatherListVM {
     
     var viewState: (ViewState) -> Void = { _ in }
     var cellTypes: ([WeatherListSectionCellConfig]) -> Void = { _ in }
+    var didTapCell: (Bool) -> Void = { _ in }
     
     // MARK: - Inputs
     
@@ -89,12 +90,7 @@ final class WeatherListViewModel: WeatherListVM {
      - Parameter type: The type of the tapped cell.
      */
     func didTapCell(with type: WeatherListCellType) {
-        switch type {
-        case .currentLocation:
-            print("Tapped current location cell")
-        case .search:
-            print("Tapped search cell")
-        }
+        outputs.didTapCell(true)
     }
     
     /**
@@ -103,16 +99,13 @@ final class WeatherListViewModel: WeatherListVM {
      - Parameter city: The city to search for.
      */
     func didTapSearch(for city: String) {
-        print("///search")
         fetchWeather(for: city) { [weak self] response in
             guard let self = self else { return }
             UserDefaults.lastSearchedCity = city
             let searchResults: WeatherListSectionCellConfig = (.search, [.search(response)])
             self.sectionConfigs.insert(searchResults, at: 0)
-            DispatchQueue.main.async {
-                self.outputs.cellTypes(self.sectionConfigs)
-                self.outputs.viewState(.content)
-            }
+            self.outputs.cellTypes(self.sectionConfigs)
+            self.outputs.viewState(.content)
         }
     }
     
@@ -125,19 +118,16 @@ final class WeatherListViewModel: WeatherListVM {
     private func fetchCurrentLocationWeather() {
         guard !hasFetchedCurrentLocationWeather else { return }
 
-        locationService.start { [weak self] location in
+        locationRepository.start { [weak self] location in
             guard let self = self else { return }
             self.weatherRepository.fetchCityName(from: location) { city in
                 guard let city = city else { return }
                 self.fetchWeather(for: city) { [weak self] response in
                     guard let self = self else { return }
-
                     let currentLocation: WeatherListSectionCellConfig = (.currentLocation, [.currentLocation(response)])
                     self.sectionConfigs.insert(currentLocation, at: 0)
-                    DispatchQueue.main.async {
-                        self.outputs.cellTypes(self.sectionConfigs)
-                        self.outputs.viewState(.content)
-                    }
+                    self.outputs.cellTypes(self.sectionConfigs)
+                    self.outputs.viewState(.content)
                 }
             }
         }
@@ -154,10 +144,8 @@ final class WeatherListViewModel: WeatherListVM {
             guard let self = self else { return }
             let recents: WeatherListSectionCellConfig = (.recents, [.search(response)])
             self.sectionConfigs.append(recents)
-            DispatchQueue.main.async {
-                self.outputs.cellTypes(self.sectionConfigs)
-                self.outputs.viewState(.content)
-            }
+            self.outputs.cellTypes(self.sectionConfigs)
+            self.outputs.viewState(.content)
         }
     }
     
@@ -178,9 +166,7 @@ final class WeatherListViewModel: WeatherListVM {
             case .success(let weatherResponse):
                 completion(weatherResponse)
             case .failure:
-                DispatchQueue.main.async {
-                    self.outputs.viewState(.error(BasicError.networkError))
-                }
+                self.outputs.viewState(.error(BasicError.networkError))
             }
         }
     }

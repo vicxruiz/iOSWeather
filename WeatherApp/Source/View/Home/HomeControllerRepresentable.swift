@@ -14,7 +14,7 @@ struct HomeControllerRepresentable: UIViewControllerRepresentable {
         let locationService = LocationService()
         let viewModel = WeatherListViewModel(
             weatherRepository: weatherRepo,
-            locationService: locationService
+            locationRepository: locationService
         )
         return WeatherListViewController(viewModel: viewModel)
     }
